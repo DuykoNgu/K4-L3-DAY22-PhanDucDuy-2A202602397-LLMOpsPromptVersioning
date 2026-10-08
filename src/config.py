@@ -40,6 +40,7 @@ ANTHROPIC_MODEL   = os.getenv("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001")
 # ── Ollama (local, không cần API key) ────────────────────────────────────
 OLLAMA_BASE_URL         = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 OLLAMA_MODEL            = os.getenv("OLLAMA_MODEL", "llama3.1")
+OLLAMA_EVAL_MODEL       = os.getenv("OLLAMA_EVAL_MODEL", OLLAMA_MODEL)
 OLLAMA_EMBEDDING_MODEL  = os.getenv("OLLAMA_EMBEDDING_MODEL", "nomic-embed-text")
 
 # ── OpenRouter ────────────────────────────────────────────────────────────
@@ -59,17 +60,24 @@ def validate() -> bool:
     """
     missing = []
 
-    if not LANGSMITH_API_KEY:
+    def configured(value):
+        return bool(value) and not value.startswith("your_")
+
+    if not configured(LANGSMITH_API_KEY):
         missing.append("LANGCHAIN_API_KEY (LangSmith)")
 
-    if PROVIDER == "openai" and not OPENAI_API_KEY:
+    if PROVIDER == "openai" and not configured(OPENAI_API_KEY):
         missing.append("OPENAI_API_KEY")
-    elif PROVIDER == "gemini" and not GOOGLE_API_KEY:
+    elif PROVIDER == "gemini" and not configured(GOOGLE_API_KEY):
         missing.append("GOOGLE_API_KEY")
-    elif PROVIDER == "anthropic" and not ANTHROPIC_API_KEY:
+    elif PROVIDER == "anthropic" and not configured(ANTHROPIC_API_KEY):
         missing.append("ANTHROPIC_API_KEY")
-    elif PROVIDER == "openrouter" and not OPENROUTER_API_KEY:
+    elif PROVIDER == "openrouter" and not configured(OPENROUTER_API_KEY):
         missing.append("OPENROUTER_API_KEY")
+    elif PROVIDER not in {"openai", "gemini", "anthropic", "ollama", "openrouter"}:
+        missing.append("PROVIDER hợp lệ")
+    if PROVIDER in {"anthropic", "openrouter"} and not configured(OPENAI_API_KEY):
+        missing.append("OPENAI_API_KEY (embeddings)")
     # Ollama: không cần API key
 
     if missing:
@@ -84,4 +92,4 @@ def validate() -> bool:
 
 
 if __name__ == "__main__":
-    validate()
+    raise SystemExit(0 if validate() else 1)
