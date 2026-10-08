@@ -2,8 +2,8 @@
   Bước 2: Prompt Hub & A/B Routing
 ============================================================
 ✅ Config OK  |  Provider: OLLAMA  |  Project: day22-lab
-⚠️  V1 lỗi: Conflict for /commits/-/phan-duc-duy-rag-prompt-v1. HTTPError('409 Client Error: Conflict for url: https://api.smith.langchain.com/commits/-/phan-duc-duy-rag-prompt-v1', '{"error":"Nothing to commit: prompt has not changed since latest commit"}\n')
-⚠️  V2 lỗi: Conflict for /commits/-/phan-duc-duy-rag-prompt-v2. HTTPError('409 Client Error: Conflict for url: https://api.smith.langchain.com/commits/-/phan-duc-duy-rag-prompt-v2', '{"error":"Nothing to commit: prompt has not changed since latest commit"}\n')
+ℹ️  V1 đã ở phiên bản mới nhất trên Hub
+ℹ️  V2 đã ở phiên bản mới nhất trên Hub
 ↓ Đã pull 'phan-duc-duy-rag-prompt-v1' từ Hub
 ↓ Đã pull 'phan-duc-duy-rag-prompt-v2' từ Hub
 🔨 Đang tạo FAISS index từ 107 chunks ...
