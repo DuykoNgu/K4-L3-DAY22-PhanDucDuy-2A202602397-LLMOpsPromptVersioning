@@ -21,6 +21,7 @@ import config  # ⚠️ phải import trước LangChain
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langsmith import Client, traceable
+from langsmith.utils import LangSmithConflictError
 
 from utils.llm_factory import get_llm, get_embeddings
 from utils.data_loader import load_knowledge_base, split_text, build_vectorstore
@@ -47,9 +48,11 @@ PROMPT_V1 = ChatPromptTemplate.from_messages([
 ])
 
 SYSTEM_V2 = (
-    "Bạn là chuyên gia phân tích thông tin. Đọc kỹ context, xác định các facts liên quan, "
-    "rồi viết câu trả lời rõ ràng, có tổ chức (3-5 câu), bằng ngôn ngữ của câu hỏi. "
-    "Không suy đoán ngoài context."
+    "Answer only with facts explicitly stated in the context. Use the language of the question "
+    "and keep the context's exact terminology. Give one concise sentence, or a numbered list "
+    "when the question asks for multiple items. Check that every claim is directly supported "
+    "by the context. Do not add definitions, examples, causes, or effects that are absent. "
+    "If the answer is missing, say 'The context does not specify.'"
     "\n\nContext:\n{context}"
 )
 
@@ -67,12 +70,20 @@ def push_prompts_to_hub(client: Client):
     try:
         url = client.push_prompt(PROMPT_V1_NAME, object=PROMPT_V1, description="V1 – ngắn gọn")
         print(f"✅ Đã push V1 → {url}")
+    except LangSmithConflictError as e:
+        if "Nothing to commit" not in str(e):
+            raise
+        print("ℹ️  V1 đã ở phiên bản mới nhất trên Hub")
     except Exception as e:
         print(f"⚠️  V1 lỗi: {e}")
 
     try:
         url = client.push_prompt(PROMPT_V2_NAME, object=PROMPT_V2, description="V2 – có cấu trúc")
         print(f"✅ Đã push V2 → {url}")
+    except LangSmithConflictError as e:
+        if "Nothing to commit" not in str(e):
+            raise
+        print("ℹ️  V2 đã ở phiên bản mới nhất trên Hub")
     except Exception as e:
         print(f"⚠️  V2 lỗi: {e}")
 

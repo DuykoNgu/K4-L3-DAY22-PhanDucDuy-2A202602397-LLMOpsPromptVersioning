@@ -4,7 +4,7 @@ import os
 import sys
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 os.environ["LANGCHAIN_TRACING_V2"] = "false"
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
@@ -35,6 +35,13 @@ class LabChecks(unittest.TestCase):
         self.assertEqual(set(versions), {ab.PROMPT_V1_NAME, ab.PROMPT_V2_NAME})
         self.assertEqual(set(ab.PROMPT_V1.input_variables), {"context", "question"})
         self.assertEqual(set(ab.PROMPT_V2.input_variables), {"context", "question"})
+
+    def test_unchanged_hub_prompts(self):
+        ab = importlib.import_module("02_prompt_hub_ab_routing")
+        client = Mock()
+        client.push_prompt.side_effect = ab.LangSmithConflictError("Nothing to commit")
+        ab.push_prompts_to_hub(client)
+        self.assertEqual(client.push_prompt.call_count, 2)
 
     def test_ragas_dataset(self):
         evaluation = importlib.import_module("03_ragas_evaluation")

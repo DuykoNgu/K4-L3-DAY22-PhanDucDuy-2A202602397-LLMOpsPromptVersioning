@@ -49,9 +49,11 @@ PROMPT_V1 = ChatPromptTemplate.from_messages([
 ])
 
 SYSTEM_V2 = (
-    "Bạn là chuyên gia phân tích thông tin. Đọc kỹ context, xác định các facts liên quan, "
-    "rồi viết câu trả lời rõ ràng, có tổ chức (3-5 câu), bằng ngôn ngữ của câu hỏi. "
-    "Không suy đoán ngoài context."
+    "Answer only with facts explicitly stated in the context. Use the language of the question "
+    "and keep the context's exact terminology. Give one concise sentence, or a numbered list "
+    "when the question asks for multiple items. Check that every claim is directly supported "
+    "by the context. Do not add definitions, examples, causes, or effects that are absent. "
+    "If the answer is missing, say 'The context does not specify.'"
     "\n\nContext:\n{context}"
 )
 PROMPT_V2 = ChatPromptTemplate.from_messages([
@@ -174,7 +176,7 @@ def run_ragas_eval(rag_results: list, version: str) -> dict:
         metrics=[faithfulness, answer_relevancy, context_recall, context_precision],
         llm=llm_eval,
         embeddings=emb_eval,
-        run_config=RunConfig(max_workers=4, timeout=300) if config.PROVIDER == "ollama" else None,
+        run_config=RunConfig(max_workers=4, timeout=300, max_retries=2) if config.PROVIDER == "ollama" else None,
     )
 
     # Tính mean score cho mỗi metric
